@@ -1,0 +1,13 @@
+syntax = "proto3";
+package oraprotobuf;
+
+option go_package = ".;oraprotobuf";
+
+message Request {
+  string a = 1;
+  string b = 2;
+}
+
+message Response {
+  string sum = 1;
+}

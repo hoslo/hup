@@ -65,15 +65,10 @@ package main
 
 import (
 	"fmt"
-<<<<<<< HEAD
-	"hup"
-	pb "hup/hupprotobuf"
-=======
->>>>>>> 970fb6f7556d4fd2a45cfa7681c798f7b2170689
 	"strconv"
 
 	"github.com/hoslo/hup"
-	pb "github.com/hoslo/hup/oraprotobuf"
+	pb "github.com/hoslo/hup/hupprotobuf"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -94,6 +89,7 @@ func main() {
 	s.Serve()
 }
 
+
 ```
 ## Client
 ```go
@@ -101,16 +97,11 @@ package main
 
 import (
 	"fmt"
-<<<<<<< HEAD
-	"hup"
-	pb "hup/hupprotobuf"
-=======
->>>>>>> 970fb6f7556d4fd2a45cfa7681c798f7b2170689
 	"sync"
 	"time"
 
 	"github.com/hoslo/hup"
-	pb "github.com/hoslo/hup/oraprotobuf"
+	pb "github.com/hoslo/hup/hupprotobuf"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -152,6 +143,7 @@ func main() {
 	wg.Wait()
 
 }
+
 
 ```
 <!-- This is optional and it is used to give the user info on how to use the project after installation. This could be added in the Installation section also. -->

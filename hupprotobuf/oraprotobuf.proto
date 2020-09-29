@@ -1,7 +1,7 @@
 syntax = "proto3";
 package oraprotobuf;
 
-option go_package = ".;oraprotobuf";
+option go_package = ".;hupprotobuf";
 
 message Request {
   string a = 1;

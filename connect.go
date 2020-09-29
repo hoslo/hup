@@ -41,8 +41,8 @@ func (c *Connection) SendMsgBuffChan(route string, msgID uint32, msgData []byte)
 	//c.RUnlock()
 
 	//将data封包，并且发送
-	dp := NewDataPack()
-	msg, err := dp.Pack(NewMsgPackage(route, msgID, msgData))
+	dp := NewPack()
+	msg, err := dp.Pack(NewMessage(route, msgID, msgData))
 	if err != nil {
 		Error("Pack error msg route = ", route)
 		return errors.New("Pack error msg ")
@@ -92,7 +92,7 @@ func (c *Connection) Read() {
 		case <-c.ctx.Done():
 			return
 		default:
-			dp := NewDataPack()
+			dp := NewPack()
 
 			headData := make([]byte, dp.GetHeadLen())
 			if _, err := io.ReadFull(c.Conn, headData); err != nil {
@@ -111,8 +111,8 @@ func (c *Connection) Read() {
 			}
 
 			var data []byte
-			if msg.GetDataLen() > 0 {
-				data = make([]byte, msg.GetDataLen())
+			if msg.DataLen > 0 {
+				data = make([]byte, msg.DataLen)
 				if _, err := io.ReadFull(c.Conn, data); err != nil {
 					Error("read msg data error ", err)
 					return
@@ -120,16 +120,16 @@ func (c *Connection) Read() {
 			}
 
 			var routeData []byte
-			if msg.GetRouteLen() > 0 {
-				routeData = make([]byte, msg.GetRouteLen())
+			if msg.RouteLen > 0 {
+				routeData = make([]byte, msg.RouteLen)
 				if _, err := io.ReadFull(c.Conn, routeData); err != nil {
 					Error("read msg data error ", err)
 					return
 				}
 			}
-			msg.SetData(data)
-			msg.SetRoute(routeData)
-			if HandFunc, ok := c.MsgHandler[string(msg.GetRoute())]; ok {
+			msg.Data = data
+			msg.Route = routeData
+			if HandFunc, ok := c.MsgHandler[string(msg.Route)]; ok {
 				go HandFunc(c, msg)
 			} else {
 				return

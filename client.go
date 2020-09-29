@@ -11,7 +11,7 @@ type Client struct {
 	Name    string
 	Addr    string
 	Network string
-	dp      *DataPack
+	dp      *Pack
 }
 
 type MsgRecv struct {
@@ -30,12 +30,12 @@ func NewClient(name string, network string, addr string) (*Client, error) {
 		Network: network,
 		Name:    name,
 		Addr:    addr,
-		dp:      NewDataPack(),
+		dp:      NewPack(),
 	}, nil
 }
 
 func (c *Client) Send(route string, msgID uint32, data []byte) error {
-	body, err := c.dp.Pack(NewMsgPackage(route, msgID, data))
+	body, err := c.dp.Pack(NewMessage(route, msgID, data))
 	if err != nil {
 		return err
 	}
@@ -60,8 +60,8 @@ func (c *Client) Recv() (*MsgRecv, error) {
 	}
 
 	var data []byte
-	if msgHead.GetDataLen() > 0 {
-		data = make([]byte, msgHead.GetDataLen())
+	if msgHead.DataLen > 0 {
+		data = make([]byte, msgHead.DataLen)
 		if _, err := io.ReadFull(c.Conn, data); err != nil {
 			Error("read msg data error ", err)
 			return nil, err
@@ -69,8 +69,8 @@ func (c *Client) Recv() (*MsgRecv, error) {
 	}
 
 	var routeData []byte
-	if msgHead.GetRouteLen() > 0 {
-		routeData = make([]byte, msgHead.GetRouteLen())
+	if msgHead.RouteLen > 0 {
+		routeData = make([]byte, msgHead.RouteLen)
 		if _, err := io.ReadFull(c.Conn, routeData); err != nil {
 			Error("read msg data error ", err)
 			return nil, err
@@ -78,7 +78,7 @@ func (c *Client) Recv() (*MsgRecv, error) {
 	}
 	msgRecv := &MsgRecv{
 		Route: string(routeData),
-		MsgID: msgHead.GetMsgID(),
+		MsgID: msgHead.ID,
 		Body:  data}
 	return msgRecv, nil
 }

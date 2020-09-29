@@ -66,7 +66,7 @@ package main
 import (
 	"fmt"
 	"hup"
-	pb "hup/oraprotobuf"
+	pb "hup/hupprotobuf"
 	"strconv"
 
 	"google.golang.org/protobuf/proto"
@@ -96,7 +96,7 @@ package main
 import (
 	"fmt"
 	"hup"
-	pb "hup/oraprotobuf"
+	pb "hup/hupprotobuf"
 	"sync"
 	"time"
 

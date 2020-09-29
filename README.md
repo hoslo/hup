@@ -65,10 +65,10 @@ package main
 
 import (
 	"fmt"
-	"hup"
-	pb "hup/oraprotobuf"
 	"strconv"
 
+	"github.com/hoslo/hup"
+	pb "github.com/hoslo/hup/oraprotobuf"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -77,14 +77,15 @@ func main() {
 	hup.SetLevel(2)
 	s.AddRoute("/ping", func(connection *hup.Connection, message *hup.Message) {
 		var out = &pb.Request{}
-		err := proto.Unmarshal(message.GetData(), out)
+		err := proto.Unmarshal(message.Data, out)
 		if err != nil {
 			fmt.Println(err)
 		}
-		result := out.A + "-" + out.B + strconv.Itoa(int(message.GetMsgID()))
+		result := out.A + "-" + out.B + strconv.Itoa(int(message.ID))
 		body, err := proto.Marshal(&pb.Response{Sum: result})
-		connection.SendMsgBuffChan("/ping", message.GetMsgID(), body)
+		connection.SendMsgBuffChan("/ping", message.ID, body)
 	})
+
 	s.Serve()
 }
 
@@ -95,10 +96,11 @@ package main
 
 import (
 	"fmt"
-	"hup"
-	pb "hup/oraprotobuf"
 	"sync"
 	"time"
+
+	"github.com/hoslo/hup"
+	pb "github.com/hoslo/hup/oraprotobuf"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -111,17 +113,21 @@ func do(i uint32) {
 		fmt.Println(err)
 	}
 	body, err := proto.Marshal(&pb.Request{A: "name", B: "age"})
-	err = client.Send("/ping", i, body)
-	if err != nil {
-		fmt.Println(err)
+	for j := 10 * i; j < 10*i+10; j++ {
+		err = client.Send("/ping", j, body)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
-	msgRecv, err := client.Recv()
-	if err != nil {
-		fmt.Println(err)
+	for j := 10 * i; j < 10*i+10; j++ {
+		msgRecv, err := client.Recv()
+		if err != nil {
+			fmt.Println(err)
+		}
+		var out = &pb.Response{}
+		err = proto.Unmarshal(msgRecv.Body, out)
+		fmt.Println(msgRecv.Route, msgRecv.MsgID, out)
 	}
-	var out = &pb.Response{}
-	err = proto.Unmarshal(msgRecv.Body, out)
-	fmt.Println(msgRecv.Route, msgRecv.MsgID, out)
 	wg.Done()
 }
 

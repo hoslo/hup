@@ -1,6 +1,7 @@
 package hup
 
 import (
+	"context"
 	"net"
 )
 
@@ -21,6 +22,10 @@ type Server struct {
 	//服务绑定的地址
 	Addr string
 
+	ctx context.Context
+
+	cancel context.CancelFunc
+
 	msgHandler map[string]HandlerFunc
 }
 
@@ -38,48 +43,49 @@ func (s *Server) AddRoute(route string, msgHandlerFunc HandlerFunc) {
 
 func (s *Server) Start() {
 	InfoF("Listener at %s is starting\n", s.Addr)
-	go func() {
-		addr, err := net.ResolveTCPAddr(s.IPVersion, s.Addr)
+	s.ctx, s.cancel = context.WithCancel(context.Background())
+	defer s.Stop()
+	addr, err := net.ResolveTCPAddr(s.IPVersion, s.Addr)
+	if err != nil {
+		Info("resolve tcp addr err: ", err)
+		return
+	}
+
+	//2 监听服务器地址
+	listener, err := net.ListenTCP(s.IPVersion, addr)
+	if err != nil {
+		Info("listen", s.IPVersion, "err", err)
+		return
+	}
+	Info("Server listening")
+
+	for {
+		conn, err := listener.AcceptTCP()
 		if err != nil {
-			Info("resolve tcp addr err: ", err)
-			return
+			Error("accept err:", err)
+			continue
 		}
 
-		//2 监听服务器地址
-		listener, err := net.ListenTCP(s.IPVersion, addr)
-		if err != nil {
-			Info("listen", s.IPVersion, "err", err)
-			return
-		}
-		Info("Server listening")
+		Info("get conn remote addr:", conn.RemoteAddr().String())
 
-		for {
-			conn, err := listener.AcceptTCP()
-			if err != nil {
-				Error("accept err:", err)
-				return
-			}
-			Info("get conn remote addr:", conn.RemoteAddr().String())
-			dealConn := NewConnection(conn, s.msgHandler)
+		dealConn := NewConnection(conn, s.msgHandler)
+		go dealConn.Start()
 
-			//3.4 启动当前链接的处理业务
-			go dealConn.Start()
-		}
-
-	}()
+	}
 }
 
 func (s *Server) Stop() {
-	//panic("implement me")
-	s.Start()
-
-	select {}
+	s.cancel()
+	return
 }
 
 func (s *Server) Serve() {
 	s.Start()
 
-	select {}
+	select {
+	case <-s.ctx.Done():
+		return
+	}
 }
 
 type HandlerFunc func(*Connection, *Message)

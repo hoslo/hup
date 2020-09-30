@@ -3,7 +3,6 @@ package hup
 import (
 	"io"
 	"net"
-	"time"
 )
 
 type Client struct {
@@ -84,7 +83,8 @@ func (c *Client) Recv() (*MsgRecv, error) {
 }
 
 func (c *Client) Exit() {
-	time.Sleep(time.Second * 1)
-	c.Conn.Close()
-
+	if c != nil {
+		c.Conn.Close()
+	}
+	return
 }

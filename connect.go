@@ -20,7 +20,7 @@ type Connection struct {
 }
 
 func NewConnection(conn *net.TCPConn, msgHandler map[string]HandlerFunc) *Connection {
-	//初始化Conn属性
+
 	c := &Connection{
 		Conn:        conn,
 		isClosed:    false,
@@ -28,12 +28,10 @@ func NewConnection(conn *net.TCPConn, msgHandler map[string]HandlerFunc) *Connec
 		msgBuffChan: make(chan []byte, 1024),
 	}
 
-	//将新创建的Conn添加到链接管理中
-
 	return c
 }
 
-func (c *Connection) SendMsgBuffChan(route string, msgID uint32, msgData []byte) error {
+func (c *Connection) SendMsg(route string, msgID uint32, msgData []byte) error {
 	//c.Lock()
 	if c.isClosed == true {
 		return errors.New("Connection closed when send buff msg")
